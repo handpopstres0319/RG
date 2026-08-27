@@ -450,7 +450,6 @@
 <div id="game-wrapper">
     <div class="header">
         <div class="score-box">SCORE <span id="score">0</span></div>
-        <!-- 오른쪽 위 MAX 글씨 영역 (조건부 클릭 함수 연결) -->
         <div id="top-max-box" class="top-combo-box" onclick="handleTopMaxClick()">MAX <span id="top-max-combo">0</span></div>
     </div>
 
@@ -475,7 +474,7 @@
             </div>
         </div>
 
-        <!-- Tutorial Modal (English) -->
+        <!-- Tutorial Modal -->
         <div id="tutorial-overlay" class="overlay">
             <h1>HOW TO PLAY</h1>
             <div class="tutorial-box">
@@ -552,8 +551,6 @@
     let hitCounts = { PERFECT: 0, GOOD: 0, BAD: 0, MISS: 0 };
     let totalNotesCount = 0;
     let isAllPerfectStreak = true;
-    
-    // 튜토리얼 화면 상태를 체크하는 변수
     let isTutorialOpen = false;
 
     function triggerMissFlash() {
@@ -637,7 +634,6 @@
         document.getElementById("start-overlay").style.display = "flex";
     }
 
-    // 튜토리얼 화면일 때만 이스터에그 모달을 띄우는 함수
     function handleTopMaxClick() {
         if (isTutorialOpen) {
             document.getElementById("egg-modal").style.display = "flex";
@@ -995,7 +991,7 @@
                     const w = trackWidth - padding * 2;
                     const type = NOTE_TYPES[note.track];
 
-                    drawClassicNode(x, noteY, w, noteHeight, type);
+                    drawClassicNote(x, noteY, w, noteHeight, type);
                 }
             }
         }
