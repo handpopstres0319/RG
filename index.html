@@ -28,7 +28,7 @@
         #game-wrapper {
             position: relative;
             width: 100%;
-            max-width: 380px;
+            max-width: 320px;
             height: 100vh;
             max-height: 720px;
             background: #09090e;
@@ -39,7 +39,7 @@
         }
 
         .header {
-            padding: 16px 20px;
+            padding: 14px 16px;
             background: #050508;
             display: flex;
             justify-content: space-between;
@@ -50,7 +50,7 @@
         
         .score-box, .top-combo-box {
             font-family: 'Press Start 2P', monospace;
-            font-size: 11px;
+            font-size: 10px;
             color: #8a8a9e;
         }
         .score-box span, .top-combo-box span {
@@ -65,7 +65,6 @@
             background: #000000;
         }
 
-        /* 미스 발생 시 스코어 아래 영역 테두리에만 적용되는 빨간 그라데이션 레이어 */
         #miss-flash {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -82,14 +81,13 @@
             height: 100%;
         }
         
-        /* 콤보 텍스트: 위아래로 길게 늘어나도록 transform scaleY 적용 및 PERFECT 바로 위에 밀착 */
         #center-combo {
             position: absolute;
             top: 61%;
             left: 50%;
             transform: translate(-50%, -50%) scaleY(1.7);
             font-family: 'Press Start 2P', monospace;
-            font-size: 32px;
+            font-size: 28px;
             opacity: 0;
             pointer-events: none;
             z-index: 5;
@@ -104,14 +102,13 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* 판정 텍스트 (PERFECT 등) */
         #judgment-text {
             position: absolute;
             top: 70%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Press Start 2P', monospace;
-            font-size: 22px;
+            font-size: 20px;
             opacity: 0;
             pointer-events: none;
             z-index: 5;
@@ -128,15 +125,15 @@
             justify-content: center;
             align-items: center;
             z-index: 20;
-            padding: 24px;
+            padding: 20px;
             text-align: center;
         }
 
         .overlay h1 {
             font-family: 'Press Start 2P', monospace;
-            font-size: 22px;
+            font-size: 20px;
             color: #ffffff;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             line-height: 1.3;
             text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
         }
@@ -165,20 +162,20 @@
         .difficulty-group {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            width: 100%;
-            max-width: 220px;
-            margin: 0 auto 40px auto;
             align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 170px;
+            margin: 0 auto;
         }
 
         .diff-btn {
             font-family: 'Press Start 2P', monospace;
             width: 100%;
-            height: 48px;
-            font-size: 13px;
+            height: 34px;
+            font-size: 9px;
             font-weight: 800;
-            border-radius: 24px;
+            border-radius: 17px;
             cursor: pointer;
             letter-spacing: 1px;
             transition: all 0.2s ease;
@@ -188,32 +185,44 @@
             background: rgba(15, 15, 25, 0.7);
         }
 
+        .diff-btn.tutorial {
+            width: 110px;
+            height: 17px;
+            font-size: 6px;
+            border-radius: 8px;
+            border: 2px solid #6c6c7c;
+            color: #a8a8b8;
+            text-shadow: 0 0 4px #6c6c7c;
+            box-shadow: 0 0 6px rgba(108, 108, 124, 0.3), inset 0 0 4px rgba(108, 108, 124, 0.2);
+            margin-top: 4px;
+        }
+
         .diff-btn.easy {
             border: 2px solid #00d8ff;
             color: #00d8ff;
-            text-shadow: 0 0 8px #00d8ff;
-            box-shadow: 0 0 10px rgba(0, 216, 255, 0.5), inset 0 0 8px rgba(0, 216, 255, 0.2);
+            text-shadow: 0 0 6px #00d8ff;
+            box-shadow: 0 0 8px rgba(0, 216, 255, 0.4), inset 0 0 6px rgba(0, 216, 255, 0.2);
         }
 
         .diff-btn.normal {
             border: 2px solid #00ff66;
             color: #00ff66;
-            text-shadow: 0 0 8px #00ff66;
-            box-shadow: 0 0 10px rgba(0, 255, 102, 0.5), inset 0 0 8px rgba(0, 255, 102, 0.2);
+            text-shadow: 0 0 6px #00ff66;
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.4), inset 0 0 6px rgba(0, 255, 102, 0.2);
         }
 
         .diff-btn.hard {
             border: 2px solid #ff9900;
             color: #ff9900;
-            text-shadow: 0 0 8px #ff9900;
-            box-shadow: 0 0 10px rgba(255, 153, 0, 0.5), inset 0 0 8px rgba(255, 153, 0, 0.2);
+            text-shadow: 0 0 6px #ff9900;
+            box-shadow: 0 0 8px rgba(255, 153, 0, 0.4), inset 0 0 6px rgba(255, 153, 0, 0.2);
         }
 
         .diff-btn.extreme {
             border: 2px solid #ff007f;
             color: #ff007f;
-            text-shadow: 0 0 8px #ff007f;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5), inset 0 0 8px rgba(255, 0, 127, 0.2);
+            text-shadow: 0 0 6px #ff007f;
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.4), inset 0 0 6px rgba(255, 0, 127, 0.2);
         }
 
         .diff-btn:hover {
@@ -221,71 +230,117 @@
             filter: brightness(1.2);
         }
 
-        .controls-wrapper {
-            margin-top: 5px;
-        }
-        .key-group {
-            display: flex;
-            gap: 8px;
+        #tutorial-overlay {
+            display: none;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: left;
+            padding: 24px;
         }
-        .key-cap {
+
+        .tutorial-box {
+            background: rgba(18, 18, 28, 0.9);
+            border: 1px solid #2a2a3c;
+            border-radius: 12px;
+            padding: 16px;
+            width: 100%;
+            max-width: 270px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .tutorial-box h2 {
             font-family: 'Press Start 2P', monospace;
-            width: 36px;
-            height: 36px;
-            line-height: 36px;
-            background: #181824;
-            border: 1px solid #28283a;
-            border-radius: 6px;
-            color: #00d2ff;
             font-size: 11px;
-            box-shadow: 0 0 6px rgba(0, 210, 255, 0.3);
+            color: #00d8ff;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .tutorial-box p {
+            font-size: 11px;
+            color: #b8b8c8;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-box span.key-badge {
+            display: inline-block;
+            background: #1a1a26;
+            border: 1px solid #4a4a5c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #ffffff;
+        }
+
+        .close-tutorial-btn {
+            font-family: 'Press Start 2P', monospace;
+            width: 100%;
+            max-width: 190px;
+            height: 36px;
+            font-size: 9px;
+            font-weight: 800;
+            color: #00d8ff;
+            text-shadow: 0 0 6px #00d8ff;
+            background: rgba(15, 15, 25, 0.7);
+            border: 2px solid #00d8ff;
+            box-shadow: 0 0 8px rgba(0, 216, 255, 0.4), inset 0 0 6px rgba(0, 216, 255, 0.2);
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .close-tutorial-btn:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
         }
 
         .result-container {
             display: flex;
             width: 100%;
-            max-width: 330px;
+            max-width: 290px;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             background: rgba(18, 18, 28, 0.8);
             border: 1px solid #2a2a3c;
             border-radius: 12px;
-            padding: 16px;
+            padding: 12px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
 
         .result-left {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             text-align: left;
             font-family: 'Press Start 2P', monospace;
         }
 
         .res-score-box {
-            font-size: 10px;
+            font-size: 9px;
             color: #8a8a9e;
         }
         .res-score-val {
-            font-size: 16px;
+            font-size: 14px;
             color: #ffffff;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
         .res-judge-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px 12px;
-            margin-top: 5px;
-            font-size: 9px;
+            gap: 6px 10px;
+            margin-top: 4px;
+            font-size: 8px;
         }
         .res-judge-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             color: #8a8a9e;
         }
         .res-judge-item span { 
@@ -295,13 +350,13 @@
         .res-meta-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-top: 5px;
+            gap: 5px;
+            margin-top: 4px;
             border-top: 1px solid #28283a;
-            padding-top: 8px;
+            padding-top: 6px;
         }
         .res-meta-item {
-            font-size: 9px;
+            font-size: 8px;
             color: #8a8a9e;
         }
         .res-meta-item span {
@@ -312,12 +367,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-left: 10px;
+            padding-left: 6px;
         }
 
         #rank-badge {
             font-family: 'Press Start 2P', monospace;
-            font-size: 80px;
+            font-size: 64px;
             font-weight: 900;
             line-height: 1;
             text-shadow: 0 0 20px currentColor;
@@ -332,16 +387,16 @@
         .retry-btn {
             font-family: 'Press Start 2P', monospace;
             width: 100%;
-            max-width: 220px;
-            height: 44px;
-            font-size: 12px;
+            max-width: 190px;
+            height: 40px;
+            font-size: 11px;
             font-weight: 800;
             color: #ffeb3b;
             text-shadow: 0 0 8px #ffeb3b;
             background: rgba(15, 15, 25, 0.7);
             border: 2px solid #ffeb3b;
             box-shadow: 0 0 10px rgba(255, 235, 59, 0.5), inset 0 0 8px rgba(255, 235, 59, 0.2);
-            border-radius: 22px;
+            border-radius: 20px;
             cursor: pointer;
             letter-spacing: 1px;
             transition: all 0.2s ease;
@@ -362,7 +417,6 @@
     </div>
 
     <div id="canvas-container">
-        <!-- 미스 발생 시 스코어 아래 영역 테두리에만 적용되는 빨간 그라데이션 레이어 -->
         <div id="miss-flash"></div>
 
         <canvas id="gameCanvas"></canvas>
@@ -370,7 +424,7 @@
         <div id="center-combo">0</div>
         <div id="judgment-text">PERFECT</div>
         
-        <!-- 시작 화면 -->
+        <!-- Start Screen -->
         <div id="start-overlay" class="overlay">
             <h1>BEAT RUSH</h1>
 
@@ -379,19 +433,23 @@
                 <button class="diff-btn normal" onclick="startWithDifficulty('NORMAL')">NORMAL</button>
                 <button class="diff-btn hard" onclick="startWithDifficulty('HARD')">HARD</button>
                 <button class="diff-btn extreme" onclick="startWithDifficulty('EXTREME')">EXTREME</button>
-            </div>
-            
-            <div class="controls-wrapper">
-                <div class="key-group">
-                    <div class="key-cap">D</div>
-                    <div class="key-cap">F</div>
-                    <div class="key-cap">J</div>
-                    <div class="key-cap">K</div>
-                </div>
+                <button class="diff-btn tutorial" onclick="openTutorial()">TUTORIAL</button>
             </div>
         </div>
 
-        <!-- 결과 화면 -->
+        <!-- Tutorial Modal (English) -->
+        <div id="tutorial-overlay" class="overlay">
+            <h1>HOW TO PLAY</h1>
+            <div class="tutorial-box">
+                <h2>CONTROLS</h2>
+                <p>PC: Use keys <span class="key-badge">D</span> <span class="key-badge">F</span> <span class="key-badge">J</span> <span class="key-badge">K</span>.</p>
+                <p>MOBILE: Tap the 4 lanes on screen.</p>
+                <p>Hit the notes as they reach the judgment line to score points!</p>
+            </div>
+            <button class="close-tutorial-btn" onclick="closeTutorial()">BACK</button>
+        </div>
+
+        <!-- Result Screen -->
         <div id="result-overlay" class="overlay" style="display: none;">
             <h1 id="result-title">CLEAR</h1>
             
@@ -472,59 +530,38 @@
         let t = START_DELAY;
 
         let beatInterval = 0.4;
-        let doubleRatio = 0.0;
-        let tripleRatio = 0.0;
+        if (difficulty === 'EASY') beatInterval = 0.55;
+        else if (difficulty === 'NORMAL') beatInterval = 0.38;
+        else if (difficulty === 'HARD') beatInterval = 0.26;
+        else if (difficulty === 'EXTREME') beatInterval = 0.18;
 
-        if (difficulty === 'EASY') {
-            beatInterval = 0.55;
-            doubleRatio = 0.1;
-        } else if (difficulty === 'NORMAL') {
-            beatInterval = 0.38;
-            doubleRatio = 0.2;
-        } else if (difficulty === 'HARD') {
-            beatInterval = 0.26;
-            doubleRatio = 0.3;
-        } else if (difficulty === 'EXTREME') {
-            beatInterval = 0.18;
-            doubleRatio = 0.35;
-            tripleRatio = 0.1;
-        }
-
-        let lastTracks = [];
+        // 허용되는 동시타격 조합: 인접하지 않은(간격이 1칸 이상 벌어진) 조합만 허용
+        // 유효한 2개 동시조합: [0,2], [0,3], [1,3] (0-based 인덱스로 각각 1-3, 1-4, 2-4번 줄)
+        const validDoubleCombinations = [
+            [0, 2],
+            [0, 3],
+            [1, 3]
+        ];
 
         while (t < START_DELAY + TOTAL_DURATION) {
-            let noteCount = 1;
-            let rand = Math.random();
-
-            if (rand < tripleRatio) {
-                noteCount = 3;
-            } else if (rand < tripleRatio + doubleRatio) {
-                noteCount = 2;
-            }
-
-            let availableTracks = [0, 1, 2, 3];
-            let selectedTracks = [];
-
-            for (let i = 0; i < noteCount; i++) {
-                if (availableTracks.length === 0) break;
-                
-                let pickIndex = Math.floor(Math.random() * availableTracks.length);
-                let chosenTrack = availableTracks[pickIndex];
-
-                if (noteCount === 1 && lastTracks.includes(chosenTrack) && Math.random() < 0.6) {
-                    pickIndex = (pickIndex + 1) % availableTracks.length;
-                    chosenTrack = availableTracks[pickIndex];
+            // 난이도에 따라 일정 확률로 동시 타격(2개) 발생 (EASY는 없음, NORMAL 이상부터 적용)
+            let isDouble = false;
+            if (difficulty !== 'EASY') {
+                const doubleChance = difficulty === 'EXTREME' ? 0.35 : (difficulty === 'HARD' ? 0.25 : 0.15);
+                if (Math.random() < doubleChance) {
+                    isDouble = true;
                 }
-
-                selectedTracks.push(chosenTrack);
-                availableTracks.splice(pickIndex, 1);
             }
 
-            lastTracks = selectedTracks;
-
-            selectedTracks.forEach(tr => {
-                chart.push({ time: Number(t.toFixed(3)), track: tr });
-            });
+            if (isDouble) {
+                // 인접하지 않은 유효한 동시 조합 중 하나 선택
+                const comboPair = validDoubleCombinations[Math.floor(Math.random() * validDoubleCombinations.length)];
+                chart.push({ time: Number(t.toFixed(3)), track: comboPair[0] });
+                chart.push({ time: Number(t.toFixed(3)), track: comboPair[1] });
+            } else {
+                let chosenTrack = Math.floor(Math.random() * TRACK_COUNT);
+                chart.push({ time: Number(t.toFixed(3)), track: chosenTrack });
+            }
 
             t += beatInterval;
         }
@@ -542,6 +579,16 @@
     let selectedDiff = "NORMAL";
     let activeNotes = [];
     let hitEffects = [];
+
+    function openTutorial() {
+        document.getElementById("start-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "flex";
+    }
+
+    function closeTutorial() {
+        document.getElementById("tutorial-overlay").style.display = "none";
+        document.getElementById("start-overlay").style.display = "flex";
+    }
 
     function startWithDifficulty(diff) {
         selectedDiff = diff;
@@ -728,6 +775,7 @@
 
     function showStartMenu() {
         document.getElementById("result-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "none";
         document.getElementById("start-overlay").style.display = "flex";
     }
 
@@ -738,6 +786,7 @@
 
         document.getElementById("start-overlay").style.display = "none";
         document.getElementById("result-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "none";
 
         score = 0;
         combo = 0;
