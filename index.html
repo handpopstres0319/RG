@@ -57,6 +57,20 @@
             color: #ffffff;
             margin-left: 4px;
         }
+
+        /* 기본 상태에서는 클릭 안 됨 */
+        .top-combo-box {
+            cursor: default;
+            transition: filter 0.2s ease;
+        }
+        
+        /* 튜토리얼 화면일 때만 클래스를 붙여서 클릭 가능하게 변경 */
+        .top-combo-box.egg-active {
+            cursor: pointer;
+        }
+        .top-combo-box.egg-active:hover {
+            filter: brightness(1.3);
+        }
         
         #canvas-container {
             position: relative;
@@ -297,6 +311,29 @@
             transform: translateY(-2px);
         }
 
+        /* 사진 이스터에그 팝업 모달 */
+        #egg-modal {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.92);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            padding: 20px;
+        }
+
+        #egg-modal img {
+            max-width: 85%;
+            max-height: 65vh;
+            border-radius: 10px;
+            border: 2px solid #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+            margin-bottom: 20px;
+            object-fit: contain;
+        }
+
         .result-container {
             display: flex;
             width: 100%;
@@ -413,7 +450,8 @@
 <div id="game-wrapper">
     <div class="header">
         <div class="score-box">SCORE <span id="score">0</span></div>
-        <div class="top-combo-box">MAX <span id="top-max-combo">0</span></div>
+        <!-- 오른쪽 위 MAX 글씨 영역 (조건부 클릭 함수 연결) -->
+        <div id="top-max-box" class="top-combo-box" onclick="handleTopMaxClick()">MAX <span id="top-max-combo">0</span></div>
     </div>
 
     <div id="canvas-container">
@@ -447,6 +485,12 @@
                 <p>Hit the notes as they reach the judgment line to score points!</p>
             </div>
             <button class="close-tutorial-btn" onclick="closeTutorial()">BACK</button>
+        </div>
+
+        <!-- 사진 이스터에그 팝업 모달 -->
+        <div id="egg-modal">
+            <img src="https://github.com/handpopstres0319/RG/blob/main/soin.jpg?raw=true" alt="Secret Photo">
+            <button class="close-tutorial-btn" onclick="closeEggModal()">CLOSE</button>
         </div>
 
         <!-- Result Screen -->
@@ -508,6 +552,9 @@
     let hitCounts = { PERFECT: 0, GOOD: 0, BAD: 0, MISS: 0 };
     let totalNotesCount = 0;
     let isAllPerfectStreak = true;
+    
+    // 튜토리얼 화면 상태를 체크하는 변수
+    let isTutorialOpen = false;
 
     function triggerMissFlash() {
         const flash = document.getElementById("miss-flash");
@@ -535,8 +582,6 @@
         else if (difficulty === 'HARD') beatInterval = 0.26;
         else if (difficulty === 'EXTREME') beatInterval = 0.18;
 
-        // 허용되는 동시타격 조합: 인접하지 않은(간격이 1칸 이상 벌어진) 조합만 허용
-        // 유효한 2개 동시조합: [0,2], [0,3], [1,3] (0-based 인덱스로 각각 1-3, 1-4, 2-4번 줄)
         const validDoubleCombinations = [
             [0, 2],
             [0, 3],
@@ -544,7 +589,6 @@
         ];
 
         while (t < START_DELAY + TOTAL_DURATION) {
-            // 난이도에 따라 일정 확률로 동시 타격(2개) 발생 (EASY는 없음, NORMAL 이상부터 적용)
             let isDouble = false;
             if (difficulty !== 'EASY') {
                 const doubleChance = difficulty === 'EXTREME' ? 0.35 : (difficulty === 'HARD' ? 0.25 : 0.15);
@@ -554,7 +598,6 @@
             }
 
             if (isDouble) {
-                // 인접하지 않은 유효한 동시 조합 중 하나 선택
                 const comboPair = validDoubleCombinations[Math.floor(Math.random() * validDoubleCombinations.length)];
                 chart.push({ time: Number(t.toFixed(3)), track: comboPair[0] });
                 chart.push({ time: Number(t.toFixed(3)), track: comboPair[1] });
@@ -581,13 +624,28 @@
     let hitEffects = [];
 
     function openTutorial() {
+        isTutorialOpen = true;
+        document.getElementById("top-max-box").classList.add("egg-active");
         document.getElementById("start-overlay").style.display = "none";
         document.getElementById("tutorial-overlay").style.display = "flex";
     }
 
     function closeTutorial() {
+        isTutorialOpen = false;
+        document.getElementById("top-max-box").classList.remove("egg-active");
         document.getElementById("tutorial-overlay").style.display = "none";
         document.getElementById("start-overlay").style.display = "flex";
+    }
+
+    // 튜토리얼 화면일 때만 이스터에그 모달을 띄우는 함수
+    function handleTopMaxClick() {
+        if (isTutorialOpen) {
+            document.getElementById("egg-modal").style.display = "flex";
+        }
+    }
+
+    function closeEggModal() {
+        document.getElementById("egg-modal").style.display = "none";
     }
 
     function startWithDifficulty(diff) {
@@ -774,12 +832,18 @@
     }
 
     function showStartMenu() {
+        isTutorialOpen = false;
+        document.getElementById("top-max-box").classList.remove("egg-active");
         document.getElementById("result-overlay").style.display = "none";
         document.getElementById("tutorial-overlay").style.display = "none";
+        document.getElementById("egg-modal").style.display = "none";
         document.getElementById("start-overlay").style.display = "flex";
     }
 
     function startGame() {
+        isTutorialOpen = false;
+        document.getElementById("top-max-box").classList.remove("egg-active");
+
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -787,6 +851,7 @@
         document.getElementById("start-overlay").style.display = "none";
         document.getElementById("result-overlay").style.display = "none";
         document.getElementById("tutorial-overlay").style.display = "none";
+        document.getElementById("egg-modal").style.display = "none";
 
         score = 0;
         combo = 0;
@@ -930,7 +995,7 @@
                     const w = trackWidth - padding * 2;
                     const type = NOTE_TYPES[note.track];
 
-                    drawClassicNote(x, noteY, w, noteHeight, type);
+                    drawClassicNode(x, noteY, w, noteHeight, type);
                 }
             }
         }
