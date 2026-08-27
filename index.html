@@ -65,7 +65,7 @@
             background: #000000;
         }
 
-        /* �̽� �߻� �� ���ھ� �Ʒ� ���� �׵θ����� ����Ǵ� ���� �׶��̼� ���̾� */
+        /* 미스 발생 시 스코어 아래 영역 테두리에만 적용되는 빨간 그라데이션 레이어 */
         #miss-flash {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -82,7 +82,7 @@
             height: 100%;
         }
         
-        /* �޺� �ؽ�Ʈ: ���Ʒ��� ��� �þ���� transform scaleY ���� �� PERFECT �ٷ� ���� ���� */
+        /* 콤보 텍스트: 위아래로 길게 늘어나도록 transform scaleY 적용 및 PERFECT 바로 위에 밀착 */
         #center-combo {
             position: absolute;
             top: 61%;
@@ -104,7 +104,7 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* ���� �ؽ�Ʈ (PERFECT ��) */
+        /* 판정 텍스트 (PERFECT 등) */
         #judgment-text {
             position: absolute;
             top: 70%;
@@ -362,7 +362,7 @@
     </div>
 
     <div id="canvas-container">
-        <!-- �̽� �߻� �� ���ھ� �Ʒ� ���� �׵θ����� ����Ǵ� ���� �׶��̼� ���̾� -->
+        <!-- 미스 발생 시 스코어 아래 영역 테두리에만 적용되는 빨간 그라데이션 레이어 -->
         <div id="miss-flash"></div>
 
         <canvas id="gameCanvas"></canvas>
@@ -370,7 +370,7 @@
         <div id="center-combo">0</div>
         <div id="judgment-text">PERFECT</div>
         
-        <!-- ���� ȭ�� -->
+        <!-- 시작 화면 -->
         <div id="start-overlay" class="overlay">
             <h1>BEAT RUSH</h1>
 
@@ -391,7 +391,7 @@
             </div>
         </div>
 
-        <!-- ��� ȭ�� -->
+        <!-- 결과 화면 -->
         <div id="result-overlay" class="overlay" style="display: none;">
             <h1 id="result-title">CLEAR</h1>
             
