@@ -660,16 +660,16 @@
         startGame();
     }
 
-    // 게임 시작 시 버튼/터치 피드백 사운드 (짧은 툭- 소리)
+    // 게임 시작 시 버튼 및 터치 피드백 사운드 (짧고 부드러운 툭- 소리)
     function playTouchSound() {
         if (!audioCtx) return;
         try {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -678,32 +678,51 @@
         } catch(e) {}
     }
 
-    // 노트를 맞췄을 때 챙~ 하고 울리는 맑고 청량한 타격 효과음
-    function playChimeSound() {
+    // 노트를 맞췄을 때 쾅/탁 하고 치는 스네어 드럼 및 하이햇 타격 사운드 합성 함수
+    function playDrumSound() {
         if (!audioCtx) return;
         try {
             const now = audioCtx.currentTime;
-            
-            // 배음(오버톤)을 활용한 금속성/차이브 사운드 합성
-            const frequencies = [1200, 2400, 3600];
-            frequencies.forEach((freq, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                
-                osc.type = i === 0 ? 'sine' : 'triangle';
-                osc.frequency.setValueAtTime(freq, now);
-                
-                // 챙~ 하고 은은하게 퍼져나가는 감쇠 (Decay)
-                const volume = 0.08 / (i + 1);
-                gain.gain.setValueAtTime(volume, now);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start(now);
-                osc.stop(now + 0.18);
-            });
+
+            // 1. 스네어 본체 소리 (화이트 노이즈 + 저음 피치드 오실레이터)
+            const bufferSize = audioCtx.sampleRate * 0.12; // 120ms
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1; // 화이트 노이즈 (스네어 스냅 쇳소리)
+            }
+
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = buffer;
+
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.setValueAtTime(1000, now);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.12, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+            noiseSource.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            noiseSource.start(now);
+
+            // 2. 스네어 묵직한 몸통 울림 (오실레이터 바디 사운드)
+            const bodyOsc = audioCtx.createOscillator();
+            const bodyGain = audioCtx.createGain();
+            bodyOsc.type = 'triangle';
+            bodyOsc.frequency.setValueAtTime(180, now);
+            bodyOsc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+
+            bodyGain.gain.setValueAtTime(0.15, now);
+            bodyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+            bodyOsc.connect(bodyGain);
+            bodyGain.connect(audioCtx.destination);
+            bodyOsc.start(now);
+            bodyOsc.stop(now + 0.08);
+
         } catch(e) {}
     }
 
@@ -759,7 +778,7 @@
     function triggerInput(trackIndex) {
         if (!isPlaying) return;
 
-        // 버튼을 누를 때 기본 터치 사운드 재생
+        // 키를 누를 때 기본 터치 사운드
         playTouchSound();
 
         const currentTime = (performance.now() - startTime) / 1000;
@@ -782,8 +801,8 @@
         if (closestNote && minDiff <= 0.25) {
             closestNote.hit = true;
 
-            // 노트를 정확히 맞췄을 때 챙~ 사운드로 전환 재생
-            playChimeSound();
+            // 노트를 맞췄을 때 웅장하고 타격감 있는 드럼 사운드 재생
+            playDrumSound();
 
             const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
             const trackWidth = canvas.width / TRACK_COUNT;
