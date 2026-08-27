@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            position: fixed; /* 모바일 바운스 스크롤 방지 */
+            position: fixed;
         }
         #game-wrapper {
             position: relative;
@@ -101,7 +101,7 @@
         
         #center-combo {
             position: absolute;
-            top: 61%;
+            top: 55%;
             left: 50%;
             transform: translate(-50%, -50%) scaleY(1.7);
             font-family: 'Press Start 2P', monospace;
@@ -122,7 +122,7 @@
 
         #judgment-text {
             position: absolute;
-            top: 70%;
+            top: 64%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Press Start 2P', monospace;
@@ -660,7 +660,6 @@
         startGame();
     }
 
-    // 게임 시작 시 버튼 및 터치 피드백 사운드 (짧고 부드러운 툭- 소리)
     function playTouchSound() {
         if (!audioCtx) return;
         try {
@@ -678,18 +677,16 @@
         } catch(e) {}
     }
 
-    // 노트를 맞췄을 때 쾅/탁 하고 치는 스네어 드럼 및 하이햇 타격 사운드 합성 함수
     function playDrumSound() {
         if (!audioCtx) return;
         try {
             const now = audioCtx.currentTime;
 
-            // 1. 스네어 본체 소리 (화이트 노이즈 + 저음 피치드 오실레이터)
-            const bufferSize = audioCtx.sampleRate * 0.12; // 120ms
+            const bufferSize = audioCtx.sampleRate * 0.12;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1; // 화이트 노이즈 (스네어 스냅 쇳소리)
+                data[i] = Math.random() * 2 - 1;
             }
 
             const noiseSource = audioCtx.createBufferSource();
@@ -708,7 +705,6 @@
             noiseGain.connect(audioCtx.destination);
             noiseSource.start(now);
 
-            // 2. 스네어 묵직한 몸통 울림 (오실레이터 바디 사운드)
             const bodyOsc = audioCtx.createOscillator();
             const bodyGain = audioCtx.createGain();
             bodyOsc.type = 'triangle';
@@ -778,7 +774,6 @@
     function triggerInput(trackIndex) {
         if (!isPlaying) return;
 
-        // 키를 누를 때 기본 터치 사운드
         playTouchSound();
 
         const currentTime = (performance.now() - startTime) / 1000;
@@ -796,12 +791,11 @@
             }
         }
 
-        const JUDGMENT_Y_RATIO = 0.88;
+        const JUDGMENT_Y_RATIO = 0.80;
         
         if (closestNote && minDiff <= 0.25) {
             closestNote.hit = true;
 
-            // 노트를 맞췄을 때 웅장하고 타격감 있는 드럼 사운드 재생
             playDrumSound();
 
             const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
@@ -999,22 +993,16 @@
 
         const currentTime = (now - startTime) / 1000;
         const currentSpeed = DIFFICULTY_SETTINGS[selectedDiff].speed;
-        const JUDGMENT_Y_RATIO = 0.88;
+        const JUDGMENT_Y_RATIO = 0.80;
 
         ctx.fillStyle = "#0a0a10";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const trackWidth = canvas.width / TRACK_COUNT;
         const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
-        const barHeight = 18;
+        const barHeight = 16;
 
-        for (let i = 0; i < TRACK_COUNT; i++) {
-            if (keyState[i]) {
-                ctx.fillStyle = "rgba(0, 210, 255, 0.12)";
-                ctx.fillRect(i * trackWidth, 0, trackWidth, canvas.height);
-            }
-        }
-
+        // 1. 레인 세로 가이드라인
         ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
         ctx.lineWidth = 1;
         for (let i = 1; i < TRACK_COUNT; i++) {
@@ -1024,10 +1012,41 @@
             ctx.stroke();
         }
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+        // 2. 판정선 아래 건반 박스만 칙칙한 단색(청회색 / 모브그레이) 적용
+        const keyBoxTop = judgmentY + barHeight / 2 + 2;
+        const keyBoxHeight = canvas.height - keyBoxTop;
+
+        for (let i = 0; i < TRACK_COUNT; i++) {
+            const kx = i * trackWidth;
+
+            // 1, 4번은 칙칙한 청회색조(#385a66), 2, 3번은 칙칙한 모브/분홍톤(#663850)
+            const isCyanTrack = (i === 0 || i === 3);
+            const baseColorHex = isCyanTrack ? "#385a66" : "#663850";
+
+            if (keyState[i]) {
+                ctx.fillStyle = "#cccccc"; // 누를 때는 밝게 빛남
+            } else {
+                ctx.fillStyle = baseColorHex;
+            }
+            ctx.fillRect(kx + 1, keyBoxTop, trackWidth - 2, keyBoxHeight);
+
+            // 건반 테두리
+            ctx.strokeStyle = "#888898";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(kx + 1, keyBoxTop, trackWidth - 2, keyBoxHeight);
+
+            // 누르고 있을 때 위쪽 레인 발광 효과
+            if (keyState[i]) {
+                ctx.fillStyle = isCyanTrack ? "rgba(56, 90, 102, 0.25)" : "rgba(102, 56, 80, 0.25)";
+                ctx.fillRect(kx, 0, trackWidth, judgmentY);
+            }
+        }
+
+        // 3. 판정선 바 자체
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
         ctx.fillRect(0, judgmentY - barHeight / 2, canvas.width, barHeight);
         
-        ctx.strokeStyle = "#00bcd4";
+        ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.strokeRect(0, judgmentY - barHeight / 2, canvas.width, barHeight);
 
