@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flat Color Rhythm Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #0d0d13;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 100vh;
+            max-height: 720px;
+            background: #09090e;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #1a1a26;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 14px 16px;
+            background: #050508;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1a26;
+            z-index: 10;
+        }
+        
+        .score-box, .top-combo-box {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #8a8a9e;
+        }
+        .score-box span, .top-combo-box span {
+            color: #ffffff;
+            margin-left: 4px;
+        }
+        
+        #canvas-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            background: #000000;
+        }
+
+        #miss-flash {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 35px rgba(255, 0, 0, 0.8);
+            opacity: 0;
+            z-index: 15;
+            transition: opacity 0.1s ease-out;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #center-combo {
+            position: absolute;
+            top: 61%;
+            left: 50%;
+            transform: translate(-50%, -50%) scaleY(1.7);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 28px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+            transition: transform 0.05s ease-out;
+        }
+
+        #center-combo.rainbow-combo {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #judgment-text {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 20px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.08s ease-out, transform 0.08s ease-out;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 10, 16, 0.96);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .overlay h1 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+        }
+
+        .overlay h1.full-combo {
+            background: linear-gradient(135deg, #ff007f, #ff80df);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 127, 0.7));
+        }
+
+        .overlay h1.perfect-full-combo {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 2s linear infinite;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .difficulty-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            max-width: 170px;
+            margin: 0 auto;
+        }
+
+        .diff-btn {
+            font-family: 'Press Start 2P', monospace;
+            width: 100%;
+            height: 34px;
+            font-size: 9px;
+            font-weight: 800;
+            border-radius: 17px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 15, 25, 0.7);
+        }
+
+        .diff-btn.tutorial {
+            width: 110px;
+            height: 17px;
+            font-size: 6px;
+            border-radius: 8px;
+            border: 2px solid #6c6c7c;
+            color: #a8a8b8;
+            text-shadow: 0 0 4px #6c6c7c;
+            box-shadow: 0 0 6px rgba(108, 108, 124, 0.3), inset 0 0 4px rgba(108, 108, 124, 0.2);
+            margin-top: 4px;
+        }
+
+        .diff-btn.easy {
+            border: 2px solid #00d8ff;
+            color: #00d8ff;
+            text-shadow: 0 0 6px #00d8ff;
+            box-shadow: 0 0 8px rgba(0, 216, 255, 0.4), inset 0 0 6px rgba(0, 216, 255, 0.2);
+        }
+
+        .diff-btn.normal {
+            border: 2px solid #00ff66;
+            color: #00ff66;
+            text-shadow: 0 0 6px #00ff66;
+            box-shadow: 0 0 8px rgba(0, 255, 102, 0.4), inset 0 0 6px rgba(0, 255, 102, 0.2);
+        }
+
+        .diff-btn.hard {
+            border: 2px solid #ff9900;
+            color: #ff9900;
+            text-shadow: 0 0 6px #ff9900;
+            box-shadow: 0 0 8px rgba(255, 153, 0, 0.4), inset 0 0 6px rgba(255, 153, 0, 0.2);
+        }
+
+        .diff-btn.extreme {
+            border: 2px solid #ff007f;
+            color: #ff007f;
+            text-shadow: 0 0 6px #ff007f;
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.4), inset 0 0 6px rgba(255, 0, 127, 0.2);
+        }
+
+        .diff-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+
+        #tutorial-overlay {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: left;
+            padding: 24px;
+        }
+
+        .tutorial-box {
+            background: rgba(18, 18, 28, 0.9);
+            border: 1px solid #2a2a3c;
+            border-radius: 12px;
+            padding: 16px;
+            width: 100%;
+            max-width: 270px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .tutorial-box h2 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            color: #00d8ff;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .tutorial-box p {
+            font-size: 11px;
+            color: #b8b8c8;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .tutorial-box span.key-badge {
+            display: inline-block;
+            background: #1a1a26;
+            border: 1px solid #4a4a5c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #ffffff;
+        }
+
+        .close-tutorial-btn {
+            font-family: 'Press Start 2P', monospace;
+            width: 100%;
+            max-width: 190px;
+            height: 36px;
+            font-size: 9px;
+            font-weight: 800;
+            color: #00d8ff;
+            text-shadow: 0 0 6px #00d8ff;
+            background: rgba(15, 15, 25, 0.7);
+            border: 2px solid #00d8ff;
+            box-shadow: 0 0 8px rgba(0, 216, 255, 0.4), inset 0 0 6px rgba(0, 216, 255, 0.2);
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .close-tutorial-btn:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
+        }
+
+        .result-container {
+            display: flex;
+            width: 100%;
+            max-width: 290px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(18, 18, 28, 0.8);
+            border: 1px solid #2a2a3c;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .result-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .res-score-box {
+            font-size: 9px;
+            color: #8a8a9e;
+        }
+        .res-score-val {
+            font-size: 14px;
+            color: #ffffff;
+            margin-top: 3px;
+        }
+
+        .res-judge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 10px;
+            margin-top: 4px;
+            font-size: 8px;
+        }
+        .res-judge-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 4px;
+            color: #8a8a9e;
+        }
+        .res-judge-item span { 
+            color: #ffffff;
+        }
+
+        .res-meta-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 4px;
+            border-top: 1px solid #28283a;
+            padding-top: 6px;
+        }
+        .res-meta-item {
+            font-size: 8px;
+            color: #8a8a9e;
+        }
+        .res-meta-item span {
+            color: #ffffff;
+        }
+
+        .result-right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-left: 6px;
+        }
+
+        #rank-badge {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1;
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .rank-D { color: #8a8a9e; }
+        .rank-C { color: #ff3b30; }
+        .rank-B { color: #34c759; }
+        .rank-A { color: #007aff; }
+        .rank-S { color: #ffcc00; }
+
+        .retry-btn {
+            font-family: 'Press Start 2P', monospace;
+            width: 100%;
+            max-width: 190px;
+            height: 40px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #ffeb3b;
+            text-shadow: 0 0 8px #ffeb3b;
+            background: rgba(15, 15, 25, 0.7);
+            border: 2px solid #ffeb3b;
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.5), inset 0 0 8px rgba(255, 235, 59, 0.2);
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+        .retry-btn:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 16px rgba(255, 235, 59, 0.8), inset 0 0 12px rgba(255, 235, 59, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+    <div class="header">
+        <div class="score-box">SCORE <span id="score">0</span></div>
+        <div class="top-combo-box">MAX <span id="top-max-combo">0</span></div>
+    </div>
+
+    <div id="canvas-container">
+        <div id="miss-flash"></div>
+
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="center-combo">0</div>
+        <div id="judgment-text">PERFECT</div>
+        
+        <!-- Start Screen -->
+        <div id="start-overlay" class="overlay">
+            <h1>BEAT RUSH</h1>
+
+            <div class="difficulty-group">
+                <button class="diff-btn easy" onclick="startWithDifficulty('EASY')">EASY</button>
+                <button class="diff-btn normal" onclick="startWithDifficulty('NORMAL')">NORMAL</button>
+                <button class="diff-btn hard" onclick="startWithDifficulty('HARD')">HARD</button>
+                <button class="diff-btn extreme" onclick="startWithDifficulty('EXTREME')">EXTREME</button>
+                <button class="diff-btn tutorial" onclick="openTutorial()">TUTORIAL</button>
+            </div>
+        </div>
+
+        <!-- Tutorial Modal (English) -->
+        <div id="tutorial-overlay" class="overlay">
+            <h1>HOW TO PLAY</h1>
+            <div class="tutorial-box">
+                <h2>CONTROLS</h2>
+                <p>PC: Use keys <span class="key-badge">D</span> <span class="key-badge">F</span> <span class="key-badge">J</span> <span class="key-badge">K</span>.</p>
+                <p>MOBILE: Tap the 4 lanes on screen.</p>
+                <p>Hit the notes as they reach the judgment line to score points!</p>
+            </div>
+            <button class="close-tutorial-btn" onclick="closeTutorial()">BACK</button>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-overlay" class="overlay" style="display: none;">
+            <h1 id="result-title">CLEAR</h1>
+            
+            <div class="result-container">
+                <div class="result-left">
+                    <div class="res-score-box">
+                        SCORE
+                        <div class="res-score-val" id="res-score">0000000</div>
+                    </div>
+                    
+                    <div class="res-judge-grid">
+                        <div class="res-judge-item">PERFECT <span id="res-perfect">0</span></div>
+                        <div class="res-judge-item">GOOD <span id="res-good">0</span></div>
+                        <div class="res-judge-item">BAD <span id="res-bad">0</span></div>
+                        <div class="res-judge-item">MISS <span id="res-miss">0</span></div>
+                    </div>
+
+                    <div class="res-meta-group">
+                        <div class="res-meta-item">MAX COMBO <span id="res-combo">0x</span></div>
+                        <div class="res-meta-item">ACCURACY <span id="res-accuracy">0.00%</span></div>
+                    </div>
+                </div>
+
+                <div class="result-right">
+                    <div id="rank-badge" class="rank-S">S</div>
+                </div>
+            </div>
+
+            <button class="retry-btn" onclick="showStartMenu()">RETRY</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const container = document.getElementById("canvas-container");
+
+    function resizeCanvas() {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const TRACK_COUNT = 4;
+    const TRACK_KEYS = ["d", "f", "j", "k"];
+    const NOTE_TYPES = ['cyan', 'pink', 'pink', 'cyan'];
+
+    let audioCtx = null;
+    let isPlaying = false;
+    let startTime = 0;
+    let score = 0;
+    let combo = 0;
+    let maxCombo = 0;
+    let hitCounts = { PERFECT: 0, GOOD: 0, BAD: 0, MISS: 0 };
+    let totalNotesCount = 0;
+    let isAllPerfectStreak = true;
+
+    function triggerMissFlash() {
+        const flash = document.getElementById("miss-flash");
+        flash.style.opacity = "1";
+        setTimeout(() => {
+            flash.style.opacity = "0";
+        }, 120);
+    }
+
+    function generateRhythmicRandomChart(difficulty) {
+        const chart = [];
+        const START_DELAY = 3.0; 
+        
+        let TOTAL_DURATION = 30.0;
+        if (difficulty === 'EASY') TOTAL_DURATION = 30.0;
+        else if (difficulty === 'NORMAL') TOTAL_DURATION = 40.0;
+        else if (difficulty === 'HARD') TOTAL_DURATION = 45.0;
+        else if (difficulty === 'EXTREME') TOTAL_DURATION = 45.0;
+
+        let t = START_DELAY;
+
+        let beatInterval = 0.4;
+        if (difficulty === 'EASY') beatInterval = 0.55;
+        else if (difficulty === 'NORMAL') beatInterval = 0.38;
+        else if (difficulty === 'HARD') beatInterval = 0.26;
+        else if (difficulty === 'EXTREME') beatInterval = 0.18;
+
+        // 허용되는 동시타격 조합: 인접하지 않은(간격이 1칸 이상 벌어진) 조합만 허용
+        // 유효한 2개 동시조합: [0,2], [0,3], [1,3] (0-based 인덱스로 각각 1-3, 1-4, 2-4번 줄)
+        const validDoubleCombinations = [
+            [0, 2],
+            [0, 3],
+            [1, 3]
+        ];
+
+        while (t < START_DELAY + TOTAL_DURATION) {
+            // 난이도에 따라 일정 확률로 동시 타격(2개) 발생 (EASY는 없음, NORMAL 이상부터 적용)
+            let isDouble = false;
+            if (difficulty !== 'EASY') {
+                const doubleChance = difficulty === 'EXTREME' ? 0.35 : (difficulty === 'HARD' ? 0.25 : 0.15);
+                if (Math.random() < doubleChance) {
+                    isDouble = true;
+                }
+            }
+
+            if (isDouble) {
+                // 인접하지 않은 유효한 동시 조합 중 하나 선택
+                const comboPair = validDoubleCombinations[Math.floor(Math.random() * validDoubleCombinations.length)];
+                chart.push({ time: Number(t.toFixed(3)), track: comboPair[0] });
+                chart.push({ time: Number(t.toFixed(3)), track: comboPair[1] });
+            } else {
+                let chosenTrack = Math.floor(Math.random() * TRACK_COUNT);
+                chart.push({ time: Number(t.toFixed(3)), track: chosenTrack });
+            }
+
+            t += beatInterval;
+        }
+
+        return chart;
+    }
+
+    const DIFFICULTY_SETTINGS = {
+        EASY: { speed: 1.10 },
+        NORMAL: { speed: 1.45 },
+        HARD: { speed: 1.80 },
+        EXTREME: { speed: 2.20 }
+    };
+
+    let selectedDiff = "NORMAL";
+    let activeNotes = [];
+    let hitEffects = [];
+
+    function openTutorial() {
+        document.getElementById("start-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "flex";
+    }
+
+    function closeTutorial() {
+        document.getElementById("tutorial-overlay").style.display = "none";
+        document.getElementById("start-overlay").style.display = "flex";
+    }
+
+    function startWithDifficulty(diff) {
+        selectedDiff = diff;
+        startGame();
+    }
+
+    function playBeep(freq = 440, duration = 0.08) {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    const keyState = [false, false, false, false];
+
+    window.addEventListener("keydown", (e) => {
+        const key = e.key.toLowerCase();
+        const index = TRACK_KEYS.indexOf(key);
+        if (index !== -1 && !keyState[index]) {
+            keyState[index] = true;
+            triggerInput(index);
+        }
+    });
+
+    window.addEventListener("keyup", (e) => {
+        const key = e.key.toLowerCase();
+        const index = TRACK_KEYS.indexOf(key);
+        if (index !== -1) {
+            keyState[index] = false;
+        }
+    });
+
+    function getTrackIndexFromX(x) {
+        const rect = canvas.getBoundingClientRect();
+        const touchX = x - rect.left;
+        const trackWidth = canvas.width / TRACK_COUNT;
+        return Math.floor(touchX / trackWidth);
+    }
+
+    canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            const track = getTrackIndexFromX(touch.clientX);
+            if (track >= 0 && track < TRACK_COUNT) {
+                keyState[track] = true;
+                triggerInput(track);
+            }
+        }
+    });
+
+    canvas.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const touch = e.changedTouches[i];
+            const track = getTrackIndexFromX(touch.clientX);
+            if (track >= 0 && track < TRACK_COUNT) {
+                keyState[track] = false;
+            }
+        }
+    });
+
+    function triggerInput(trackIndex) {
+        if (!isPlaying) return;
+
+        const freqs = [261.63, 329.63, 392.00, 523.25];
+        playBeep(freqs[trackIndex]);
+
+        const currentTime = (performance.now() - startTime) / 1000;
+
+        let closestNote = null;
+        let minDiff = Infinity;
+
+        for (let note of activeNotes) {
+            if (note.track === trackIndex && !note.hit && !note.missed) {
+                const diff = Math.abs(note.time - currentTime);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestNote = note;
+                }
+            }
+        }
+
+        const JUDGMENT_Y_RATIO = 0.88;
+        
+        if (closestNote && minDiff <= 0.25) {
+            closestNote.hit = true;
+
+            const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
+            const trackWidth = canvas.width / TRACK_COUNT;
+            const padding = 2;
+            const x = noteXPosition(closestNote.track, trackWidth, padding);
+            const w = trackWidth - padding * 2;
+
+            hitEffects.push({
+                x: x,
+                y: judgmentY,
+                width: w,
+                height: 14,
+                type: NOTE_TYPES[closestNote.track],
+                progress: 0
+            });
+
+            if (minDiff <= 0.08) {
+                combo++;
+                score += 1000;
+                hitCounts.PERFECT++;
+                showJudgment("PERFECT", "#00d2ff");
+            } else if (minDiff <= 0.15) {
+                combo++;
+                score += 600;
+                hitCounts.GOOD++;
+                isAllPerfectStreak = false;
+                showJudgment("GOOD", "#76ff03");
+            } else if (minDiff <= 0.22) {
+                combo = 0;
+                score += 200;
+                hitCounts.BAD++;
+                isAllPerfectStreak = false;
+                showJudgment("BAD", "#ff9800");
+            } else {
+                combo = 0;
+                hitCounts.MISS++;
+                isAllPerfectStreak = false;
+                triggerMissFlash();
+                showJudgment("MISS", "#e91e63");
+            }
+
+            if (combo > maxCombo) maxCombo = combo;
+            updateUI();
+        }
+    }
+
+    function noteXPosition(track, trackWidth, padding) {
+        return track * trackWidth + padding;
+    }
+
+    function showJudgment(text, color) {
+        const elem = document.getElementById("judgment-text");
+        const comboElem = document.getElementById("center-combo");
+
+        elem.innerText = text;
+        elem.style.color = color;
+        elem.style.opacity = "1";
+        elem.style.transform = "translate(-50%, -50%) scale(1.15)";
+
+        if (combo > 0) {
+            comboElem.innerText = combo;
+            comboElem.style.opacity = "1";
+            comboElem.style.transform = "translate(-50%, -50%) scaleY(1.7) scale(1.1)";
+            
+            if (isAllPerfectStreak) {
+                comboElem.classList.add("rainbow-combo");
+            } else {
+                comboElem.classList.remove("rainbow-combo");
+            }
+
+            setTimeout(() => {
+                comboElem.style.transform = "translate(-50%, -50%) scaleY(1.7) scale(1.0)";
+            }, 50);
+        } else {
+            comboElem.style.opacity = "0";
+        }
+
+        setTimeout(() => {
+            elem.style.opacity = "0";
+            elem.style.transform = "translate(-50%, -50%) scale(1.0)";
+        }, 140);
+    }
+
+    function updateUI() {
+        document.getElementById("score").innerText = score;
+        document.getElementById("top-max-combo").innerText = maxCombo;
+    }
+
+    function showStartMenu() {
+        document.getElementById("result-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "none";
+        document.getElementById("start-overlay").style.display = "flex";
+    }
+
+    function startGame() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        document.getElementById("start-overlay").style.display = "none";
+        document.getElementById("result-overlay").style.display = "none";
+        document.getElementById("tutorial-overlay").style.display = "none";
+
+        score = 0;
+        combo = 0;
+        maxCombo = 0;
+        hitCounts = { PERFECT: 0, GOOD: 0, BAD: 0, MISS: 0 };
+        hitEffects = [];
+        isAllPerfectStreak = true;
+        updateUI();
+
+        document.getElementById("center-combo").style.opacity = "0";
+        document.getElementById("center-combo").classList.remove("rainbow-combo");
+
+        const chart = generateRhythmicRandomChart(selectedDiff);
+        totalNotesCount = chart.length;
+        activeNotes = chart.map(n => ({ ...n, hit: false, missed: false }));
+
+        isPlaying = true;
+        startTime = performance.now();
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        isPlaying = false;
+
+        const accuracy = totalNotesCount > 0 
+            ? Math.min(100, Math.max(0, ((hitCounts.PERFECT * 1.0 + hitCounts.GOOD * 0.6 + hitCounts.BAD * 0.2) / totalNotesCount) * 100))
+            : 0;
+
+        let rank = "D";
+        if (accuracy >= 95) rank = "S";
+        else if (accuracy >= 88) rank = "A";
+        else if (accuracy >= 80) rank = "B";
+        else if (accuracy >= 70) rank = "C";
+
+        const resultTitle = document.getElementById("result-title");
+        resultTitle.className = "";
+
+        if (hitCounts.PERFECT === totalNotesCount) {
+            resultTitle.innerText = "PERFECT FULL COMBO";
+            resultTitle.classList.add("perfect-full-combo");
+        } else if (hitCounts.MISS === 0 && maxCombo === totalNotesCount) {
+            resultTitle.innerText = "FULL COMBO";
+            resultTitle.classList.add("full-combo");
+        } else {
+            resultTitle.innerText = "STAGE CLEAR";
+        }
+
+        document.getElementById("res-score").innerText = String(score).padStart(7, '0');
+        document.getElementById("res-perfect").innerText = hitCounts.PERFECT;
+        document.getElementById("res-good").innerText = hitCounts.GOOD;
+        document.getElementById("res-bad").innerText = hitCounts.BAD;
+        document.getElementById("res-miss").innerText = hitCounts.MISS;
+        document.getElementById("res-combo").innerText = maxCombo + "x";
+        document.getElementById("res-accuracy").innerText = accuracy.toFixed(2) + "%";
+
+        const rankBadge = document.getElementById("rank-badge");
+        rankBadge.innerText = rank;
+        rankBadge.className = `rank-${rank}`;
+
+        document.getElementById("result-overlay").style.display = "flex";
+    }
+
+    function drawClassicNote(x, y, width, height, type, alpha = 1.0) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+
+        if (type === 'cyan') {
+            ctx.fillStyle = '#00bcd4';
+        } else {
+            ctx.fillStyle = '#e91e63';
+        }
+
+        ctx.fillRect(x, y - height / 2, width, height);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y - height / 2, width, height);
+        ctx.restore();
+    }
+
+    function gameLoop(now) {
+        if (!isPlaying) return;
+
+        const currentTime = (now - startTime) / 1000;
+        const currentSpeed = DIFFICULTY_SETTINGS[selectedDiff].speed;
+        const JUDGMENT_Y_RATIO = 0.88;
+
+        ctx.fillStyle = "#0a0a10";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const trackWidth = canvas.width / TRACK_COUNT;
+        const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
+        const barHeight = 18;
+
+        for (let i = 0; i < TRACK_COUNT; i++) {
+            if (keyState[i]) {
+                ctx.fillStyle = "rgba(0, 210, 255, 0.12)";
+                ctx.fillRect(i * trackWidth, 0, trackWidth, canvas.height);
+            }
+        }
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1;
+        for (let i = 1; i < TRACK_COUNT; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * trackWidth, 0);
+            ctx.lineTo(i * trackWidth, canvas.height);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.fillRect(0, judgmentY - barHeight / 2, canvas.width, barHeight);
+        
+        ctx.strokeStyle = "#00bcd4";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, judgmentY - barHeight / 2, canvas.width, barHeight);
+
+        const noteHeight = 14;
+
+        for (let note of activeNotes) {
+            if (note.hit) continue;
+
+            const timeDiff = note.time - currentTime; 
+            const noteY = judgmentY - (timeDiff * canvas.height * currentSpeed);
+
+            if (timeDiff < -0.25 && !note.missed) {
+                note.missed = true;
+                combo = 0;
+                isAllPerfectStreak = false;
+                document.getElementById("center-combo").classList.remove("rainbow-combo");
+                hitCounts.MISS++;
+                triggerMissFlash();
+                showJudgment("MISS", "#e91e63");
+                updateUI();
+            }
+
+            if (!note.missed) {
+                if (noteY > -50 && noteY < canvas.height + 50) {
+                    const padding = 2;
+                    const x = noteXPosition(note.track, trackWidth, padding);
+                    const w = trackWidth - padding * 2;
+                    const type = NOTE_TYPES[note.track];
+
+                    drawClassicNote(x, noteY, w, noteHeight, type);
+                }
+            }
+        }
+
+        for (let i = hitEffects.length - 1; i >= 0; i--) {
+            const effect = hitEffects[i];
+            effect.progress += 0.08;
+
+            if (effect.progress >= 1.0) {
+                hitEffects.splice(i, 1);
+            } else {
+                const alpha = 1.0 - effect.progress;
+                const scale = 1.0 + effect.progress * 0.4;
+                const scaledWidth = effect.width * scale;
+                const scaledHeight = effect.height * scale;
+                const scaledX = effect.x - (scaledWidth - effect.width) / 2;
+
+                drawClassicNote(scaledX, effect.y, scaledWidth, scaledHeight, effect.type, alpha);
+            }
+        }
+
+        if (activeNotes.length > 0) {
+            const lastNoteTime = activeNotes[activeNotes.length - 1].time;
+            if (currentTime > lastNoteTime + 1.5) {
+                endGame();
+                return;
+            }
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+</script>
+
+</body>
+</html>
