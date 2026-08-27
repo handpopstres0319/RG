@@ -660,19 +660,50 @@
         startGame();
     }
 
-    function playBeep(freq = 440, duration = 0.08) {
+    // 게임 시작 시 버튼/터치 피드백 사운드 (짧은 툭- 소리)
+    function playTouchSound() {
         if (!audioCtx) return;
         try {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + 0.04);
+        } catch(e) {}
+    }
+
+    // 노트를 맞췄을 때 챙~ 하고 울리는 맑고 청량한 타격 효과음
+    function playChimeSound() {
+        if (!audioCtx) return;
+        try {
+            const now = audioCtx.currentTime;
+            
+            // 배음(오버톤)을 활용한 금속성/차이브 사운드 합성
+            const frequencies = [1200, 2400, 3600];
+            frequencies.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = i === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, now);
+                
+                // 챙~ 하고 은은하게 퍼져나가는 감쇠 (Decay)
+                const volume = 0.08 / (i + 1);
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now);
+                osc.stop(now + 0.18);
+            });
         } catch(e) {}
     }
 
@@ -728,8 +759,8 @@
     function triggerInput(trackIndex) {
         if (!isPlaying) return;
 
-        const freqs = [261.63, 329.63, 392.00, 523.25];
-        playBeep(freqs[trackIndex]);
+        // 버튼을 누를 때 기본 터치 사운드 재생
+        playTouchSound();
 
         const currentTime = (performance.now() - startTime) / 1000;
 
@@ -750,6 +781,9 @@
         
         if (closestNote && minDiff <= 0.25) {
             closestNote.hit = true;
+
+            // 노트를 정확히 맞췄을 때 챙~ 사운드로 전환 재생
+            playChimeSound();
 
             const judgmentY = canvas.height * JUDGMENT_Y_RATIO;
             const trackWidth = canvas.width / TRACK_COUNT;
@@ -986,7 +1020,6 @@
             const timeDiff = note.time - currentTime; 
             const noteY = judgmentY - (timeDiff * canvas.height * currentSpeed);
 
-            // 미스 판정 처리 조건 강화
             if (timeDiff < -0.2 && !note.missed) {
                 note.missed = true;
                 combo = 0;
