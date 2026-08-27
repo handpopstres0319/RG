@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flat Color Rhythm Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
@@ -13,21 +13,23 @@
             margin: 0;
             padding: 0;
         }
-        body {
+        body, html {
+            width: 100%;
+            height: 100%;
             background-color: #0d0d13;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             margin: 0;
             padding: 0;
             overflow: hidden;
+            position: fixed; /* 모바일 바운스 스크롤 방지 */
         }
         #game-wrapper {
             position: relative;
-            width: 100%;
+            width: 100vw;
             max-width: 320px;
             height: 100vh;
             max-height: 720px;
@@ -39,13 +41,16 @@
         }
 
         .header {
-            padding: 14px 16px;
+            width: 100%;
+            height: 50px;
+            padding: 0 16px;
             background: #050508;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #1a1a26;
             z-index: 10;
+            flex-shrink: 0;
         }
         
         .score-box, .top-combo-box {
@@ -529,7 +534,6 @@
     const ctx = canvas.getContext("2d");
     const container = document.getElementById("canvas-container");
 
-    // 모바일 환경에서 캔버스 크기 및 해상도가 어긋나지 않도록 컨테이너 크기에 맞게 확실히 동기화
     function resizeCanvas() {
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -539,10 +543,9 @@
         }
     }
     
-    // 초기 실행 및 화면 크기 변화/회전 시 캔버스 재조정
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("orientationchange", () => {
-        setTimeout(resizeCanvas, 200);
+        setTimeout(resizeCanvas, 300);
     });
     resizeCanvas();
 
@@ -692,10 +695,10 @@
         }
     });
 
-    function getTrackIndexFromX(x) {
+    function getTrackIndexFromX(clientX) {
         const rect = canvas.getBoundingClientRect();
-        const touchX = x - rect.left;
-        const trackWidth = canvas.width / TRACK_COUNT;
+        const touchX = clientX - rect.left;
+        const trackWidth = rect.width / TRACK_COUNT;
         return Math.floor(touchX / trackWidth);
     }
 
@@ -848,7 +851,6 @@
         isTutorialOpen = false;
         document.getElementById("top-max-box").classList.remove("egg-active");
 
-        // 게임 시작 직전 캔버스 크기 강제 재확인 (모바일 대응)
         resizeCanvas();
 
         if (!audioCtx) {
@@ -984,7 +986,8 @@
             const timeDiff = note.time - currentTime; 
             const noteY = judgmentY - (timeDiff * canvas.height * currentSpeed);
 
-            if (timeDiff < -0.25 && !note.missed) {
+            // 미스 판정 처리 조건 강화
+            if (timeDiff < -0.2 && !note.missed) {
                 note.missed = true;
                 combo = 0;
                 isAllPerfectStreak = false;
