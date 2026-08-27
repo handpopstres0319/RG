@@ -491,7 +491,7 @@
 
         <!-- 사진 이스터에그 팝업 모달 -->
         <div id="egg-modal">
-            <img src="https://github.com/handpopstres0319/RG/blob/main/soin.jpg?raw=true" alt="Secret Photo">
+            <img src="https://github.com/handpopstres0319/RG/blob/main/ChatGPT%20Image%202026%EB%85%84%208%EC%9B%94%2027%EC%9D%BC%20%EC%98%A4%ED%9B%84%2004_12_14.png?raw=true" alt="Secret Photo">
             <button class="close-tutorial-btn" onclick="closeEggModal()">CLOSE</button>
         </div>
 
@@ -1012,30 +1012,27 @@
             ctx.stroke();
         }
 
-        // 2. 판정선 아래 건반 박스만 칙칙한 단색(청회색 / 모브그레이) 적용
+        // 2. 판정선 아래 건반 박스만 칙칙한 단색 적용
         const keyBoxTop = judgmentY + barHeight / 2 + 2;
         const keyBoxHeight = canvas.height - keyBoxTop;
 
         for (let i = 0; i < TRACK_COUNT; i++) {
             const kx = i * trackWidth;
 
-            // 1, 4번은 칙칙한 청회색조(#385a66), 2, 3번은 칙칙한 모브/분홍톤(#663850)
             const isCyanTrack = (i === 0 || i === 3);
             const baseColorHex = isCyanTrack ? "#385a66" : "#663850";
 
             if (keyState[i]) {
-                ctx.fillStyle = "#cccccc"; // 누를 때는 밝게 빛남
+                ctx.fillStyle = "#cccccc";
             } else {
                 ctx.fillStyle = baseColorHex;
             }
             ctx.fillRect(kx + 1, keyBoxTop, trackWidth - 2, keyBoxHeight);
 
-            // 건반 테두리
             ctx.strokeStyle = "#888898";
             ctx.lineWidth = 1;
             ctx.strokeRect(kx + 1, keyBoxTop, trackWidth - 2, keyBoxHeight);
 
-            // 누르고 있을 때 위쪽 레인 발광 효과
             if (keyState[i]) {
                 ctx.fillStyle = isCyanTrack ? "rgba(56, 90, 102, 0.25)" : "rgba(102, 56, 80, 0.25)";
                 ctx.fillRect(kx, 0, trackWidth, judgmentY);
