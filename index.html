@@ -58,13 +58,11 @@
             margin-left: 4px;
         }
 
-        /* 기본 상태에서는 클릭 안 됨 */
         .top-combo-box {
             cursor: default;
             transition: filter 0.2s ease;
         }
         
-        /* 튜토리얼 화면일 때만 클래스를 붙여서 클릭 가능하게 변경 */
         .top-combo-box.egg-active {
             cursor: pointer;
         }
@@ -77,6 +75,7 @@
             flex: 1;
             width: 100%;
             background: #000000;
+            overflow: hidden;
         }
 
         #miss-flash {
@@ -311,7 +310,6 @@
             transform: translateY(-2px);
         }
 
-        /* 사진 이스터에그 팝업 모달 */
         #egg-modal {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -531,12 +529,22 @@
     const ctx = canvas.getContext("2d");
     const container = document.getElementById("canvas-container");
 
+    // 모바일 환경에서 캔버스 크기 및 해상도가 어긋나지 않도록 컨테이너 크기에 맞게 확실히 동기화
     function resizeCanvas() {
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        if (width > 0 && height > 0) {
+            canvas.width = width;
+            canvas.height = height;
+        }
     }
-    resizeCanvas();
+    
+    // 초기 실행 및 화면 크기 변화/회전 시 캔버스 재조정
     window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("orientationchange", () => {
+        setTimeout(resizeCanvas, 200);
+    });
+    resizeCanvas();
 
     const TRACK_COUNT = 4;
     const TRACK_KEYS = ["d", "f", "j", "k"];
@@ -701,7 +709,7 @@
                 triggerInput(track);
             }
         }
-    });
+    }, { passive: false });
 
     canvas.addEventListener("touchend", (e) => {
         e.preventDefault();
@@ -712,7 +720,7 @@
                 keyState[track] = false;
             }
         }
-    });
+    }, { passive: false });
 
     function triggerInput(trackIndex) {
         if (!isPlaying) return;
@@ -839,6 +847,9 @@
     function startGame() {
         isTutorialOpen = false;
         document.getElementById("top-max-box").classList.remove("egg-active");
+
+        // 게임 시작 직전 캔버스 크기 강제 재확인 (모바일 대응)
+        resizeCanvas();
 
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
